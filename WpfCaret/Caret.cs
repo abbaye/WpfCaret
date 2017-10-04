@@ -6,19 +6,23 @@
 //////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Threading;
+using WpfCaret.Annotations;
 
 namespace WpfCaret
 {
-    public class Caret : FrameworkElement
+    public class Caret : FrameworkElement, INotifyPropertyChanged
     {
         #region Global class variables
         private Timer _timer;
         private Point _location;
         private readonly Pen _pen = new Pen(Brushes.Black, 1);
         private int _blinkPeriod = 500;
+        private double _caretHeight = 18;
 
         #endregion
 
@@ -53,7 +57,18 @@ namespace WpfCaret
         /// <summary>
         /// Height of the caret
         /// </summary>
-        public double CaretHeight { get; set; } = 18;
+        public double CaretHeight
+        {
+            get => _caretHeight;
+            set
+            {
+                _caretHeight = value;
+
+                InitializeTimer();
+
+                OnPropertyChanged(nameof(CaretHeight));
+            }
+        }
 
         /// <summary>
         /// Left position of the caret
@@ -100,16 +115,19 @@ namespace WpfCaret
             {
                 _blinkPeriod = value;
                 InitializeTimer();
+
+                OnPropertyChanged(nameof(BlinkPeriod));
             }
         }
 
         #endregion
 
         #region Methods
+
         /// <summary>
         /// Hide the caret
         /// </summary>
-        public void Hide() => Top = Left = -1;
+        public void Hide() => MoveCaret(new Point(-1, -1));
 
         /// <summary>
         /// Method delegate for blink the caret
@@ -131,12 +149,20 @@ namespace WpfCaret
         {
             Left = point.X;
             Top = point.Y;
+
+            OnPropertyChanged(nameof(Left));
+            OnPropertyChanged(nameof(Top));
         }
 
         /// <summary>
         /// Start the caret
         /// </summary>
-        public void Start() => InitializeTimer();
+        public void Start()
+        {
+            InitializeTimer();
+
+            OnPropertyChanged(nameof(IsEnable));
+        }
 
         /// <summary>
         /// Stop the carret
@@ -145,6 +171,8 @@ namespace WpfCaret
         {
             Hide();
             _timer = null;
+
+            OnPropertyChanged(nameof(IsEnable));
         }
 
         /// <summary>
@@ -156,5 +184,13 @@ namespace WpfCaret
                 dc.DrawLine(_pen, _location, new Point(Left, _location.Y + CaretHeight));
         }
         #endregion
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

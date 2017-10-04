@@ -6,8 +6,12 @@
         mc:Ignorable="d" MouseDown="MainWindow_OnMouseDown"
         Title="Click on window to move caret..." Height="200" Width="401">
     <Grid x:Name="MainGrid">
-        <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,10,0,0" Click="Button_Click"/>
-        <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,35,0,0" Click="Button_Click_1"/>
+        <Button Content="Start" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,10,0,0" Click="Button_Click" Height="27"/>
+        <Button Content="Stop" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Margin="10,42,0,0" Click="Button_Click_1" Height="26"/>
+        <Label Content="{Binding IsEnable}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="80,73,0,0" />
+        <Label Content="IsEnable =" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,73,0,0" />
+        <Label Content="CaretHeight =" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,104,0,0" />
+        <Label Content="{Binding CaretHeight}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="95,104,0,0" />
 
     </Grid>
 </Window>

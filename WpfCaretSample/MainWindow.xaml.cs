@@ -12,6 +12,8 @@ namespace WpfCaretSample
         {
             InitializeComponent();
 
+            DataContext = _caret;
+
             _caret.MoveCaret(new Point(100, 100));
             _caret.BlinkPeriod = 600;
             _caret.Start();
