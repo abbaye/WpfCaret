@@ -14,7 +14,7 @@ namespace WpfCaretSample
 
             DataContext = _caret;
 
-            _caret.MoveCaret(new Point(100, 100));
+            _caret.MoveCaret(new Point(200, 100));
             _caret.BlinkPeriod = 600;
             _caret.Start();
 
@@ -26,7 +26,7 @@ namespace WpfCaretSample
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             _caret.Start();
-            _caret.MoveCaret(new Point(100, 100));
+            _caret.MoveCaret(new Point(200, 100));
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e) => _caret.Stop();
