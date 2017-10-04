@@ -71,32 +71,41 @@ namespace WpfCaret
         }
 
         /// <summary>
+        /// Get the relative position of the caret
+        /// </summary>
+        public Point Position => new Point(Left, Top);
+
+        /// <summary>
         /// Left position of the caret
         /// </summary>
-        public double Left
+        private double Left
         {
             get => _location.X;
-            internal set
+            set
             {
                 if (_location.X == value) return;
                 
                 _location.X = Math.Floor(value) + .5; //to avoid WPF antialiasing
                 if (Visible) Visible = false;
+
+                OnPropertyChanged(nameof(Position));
             }
         }
 
         /// <summary>
         /// Top position of the caret
         /// </summary>
-        public double Top
+        private double Top
         {
             get => _location.Y;
-            internal set
+            set
             {
                 if (_location.Y == value) return;
 
                 _location.Y = Math.Floor(value) + .5; //to avoid WPF antialiasing
                 if (Visible) Visible = false;
+
+                OnPropertyChanged(nameof(Position));
             }
         }
         
