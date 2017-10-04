@@ -1,4 +1,4 @@
-# Wpf Caret (Framework Element)
+# Wpf Caret
 
 Wpf Caret is a customisable framework element can be used to implement caret in your app...
 
