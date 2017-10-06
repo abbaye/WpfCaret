@@ -19,11 +19,10 @@ namespace WpfCaret
     {
         #region Global class variables
         private Timer _timer;
-        private Point _location;
+        private Point _position;
         private readonly Pen _pen = new Pen(Brushes.Black, 1);
         private int _blinkPeriod = 500;
         private double _caretHeight = 18;
-
         #endregion
 
         #region Constructor
@@ -73,39 +72,41 @@ namespace WpfCaret
         /// <summary>
         /// Get the relative position of the caret
         /// </summary>
-        public Point Position => new Point(Left, Top);
+        public Point Position => _position;
 
         /// <summary>
         /// Left position of the caret
         /// </summary>
-        private double Left
+        public double Left
         {
-            get => _location.X;
+            get => _position.X;
             set
             {
-                if (_location.X == value) return;
-                
-                _location.X = Math.Floor(value) + .5; //to avoid WPF antialiasing
+                if (_position.X == value) return;
+
+                _position.X = Math.Floor(value);
                 if (Visible) Visible = false;
 
                 OnPropertyChanged(nameof(Position));
+                OnPropertyChanged(nameof(Left));
             }
         }
 
         /// <summary>
         /// Top position of the caret
         /// </summary>
-        private double Top
+        public double Top
         {
-            get => _location.Y;
+            get => _position.Y;
             set
             {
-                if (_location.Y == value) return;
+                if (_position.Y == value) return;
 
-                _location.Y = Math.Floor(value) + .5; //to avoid WPF antialiasing
+                _position.Y = Math.Floor(value);
                 if (Visible) Visible = false;
 
                 OnPropertyChanged(nameof(Position));
+                OnPropertyChanged(nameof(Top));
             }
         }
         
@@ -158,10 +159,17 @@ namespace WpfCaret
         {
             Left = point.X;
             Top = point.Y;
-
-            OnPropertyChanged(nameof(Left));
-            OnPropertyChanged(nameof(Top));
         }
+
+        /// <summary>
+        /// Move the caret over the position defined by point parameter
+        /// </summary>
+        public void MoveCaret(double x, double y)
+        {
+            Left = x;
+            Top = y;
+        }
+
 
         /// <summary>
         /// Start the caret
@@ -190,7 +198,7 @@ namespace WpfCaret
         protected override void OnRender(DrawingContext dc)
         {
             if (Visible)
-                dc.DrawLine(_pen, _location, new Point(Left, _location.Y + CaretHeight));
+                dc.DrawLine(_pen, _position, new Point(Left, _position.Y + CaretHeight));
         }
         #endregion
 
