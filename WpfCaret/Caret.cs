@@ -32,8 +32,16 @@ namespace WpfCaret
             InitializeTimer();
             Hide();
         }
-        #endregion
         
+        public Caret(Brush brush)
+        {
+            _pen.Brush = brush;
+            _pen.Freeze();
+            InitializeTimer();
+            Hide();
+        }
+        #endregion
+
         #region Properties
         private static readonly DependencyProperty VisibleProperty =
             DependencyProperty.Register(nameof(Visible), typeof(bool),
