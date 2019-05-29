@@ -1,5 +1,5 @@
 ﻿//////////////////////////////////////////////
-// Fork 2017 : Derek Tremblay (derektremblay666@gmail.com) 
+// Fork 2017-2019 : Derek Tremblay (derektremblay666@gmail.com) 
 // Part of Wpf HexEditor control : https://github.com/abbaye/WPFHexEditorControl
 // Reference : https://www.codeproject.com/Tips/431000/Caret-for-WPF-User-Controls
 // Reference license : The Code Project Open License (CPOL) 1.02
