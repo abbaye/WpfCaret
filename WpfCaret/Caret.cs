@@ -3,6 +3,7 @@
 // Part of Wpf HexEditor control : https://github.com/abbaye/WPFHexEditorControl
 // Reference : https://www.codeproject.com/Tips/431000/Caret-for-WPF-User-Controls
 // Reference license : The Code Project Open License (CPOL) 1.02
+// Contributor : emes30
 //////////////////////////////////////////////
 
 using System;
@@ -11,38 +12,62 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Threading;
-using WpfCaret.Annotations;
+using WpfHexaEditor.Core.MethodExtention;
 
 namespace WpfCaret
 {
-    public class Caret : FrameworkElement, INotifyPropertyChanged
+    /// <summary>
+    /// Use mode of the caret
+    /// </summary>
+    public enum CaretMode
+    {
+        Insert,
+        Overwrite
+    }
+
+    public sealed class Caret : FrameworkElement, INotifyPropertyChanged
     {
         #region Global class variables
         private Timer _timer;
         private Point _position;
         private readonly Pen _pen = new Pen(Brushes.Black, 1);
+        private readonly Brush _brush = new SolidColorBrush(Colors.Black);
         private int _blinkPeriod = 500;
         private double _caretHeight = 18;
+        private double _caretWidth = 9;
+        private bool _hide;
+        private CaretMode _caretMode = CaretMode.Overwrite;
         #endregion
 
         #region Constructor
         public Caret()
         {
-            _pen.Freeze();
-            InitializeTimer();
-            Hide();
+            if (!DesignerProperties.GetIsInDesignMode(this))
+            {
+                _pen.Freeze();
+                _brush.Opacity = .5;
+                IsHitTestVisible = false;
+                InitializeTimer();
+                Hide();
+            }
         }
-        
+
         public Caret(Brush brush)
         {
-            _pen.Brush = brush;
-            _pen.Freeze();
-            InitializeTimer();
-            Hide();
+            if (!DesignerProperties.GetIsInDesignMode(this))
+            {
+                _pen.Brush = brush;
+                _pen.Freeze();
+                _brush.Opacity = .5;
+                IsHitTestVisible = false;
+                InitializeTimer();
+                Hide();
+            }
         }
         #endregion
 
         #region Properties
+
         private static readonly DependencyProperty VisibleProperty =
             DependencyProperty.Register(nameof(Visible), typeof(bool),
                 typeof(Caret), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
@@ -69,11 +94,31 @@ namespace WpfCaret
             get => _caretHeight;
             set
             {
+                if (_caretHeight == value) return;
+
                 _caretHeight = value;
 
-                InitializeTimer();
+                Application.Current.DoEvents();
 
                 OnPropertyChanged(nameof(CaretHeight));
+            }
+        }
+
+        /// <summary>
+        /// Width of the caret
+        /// </summary>
+        public double CaretWidth
+        {
+            get => _caretWidth;
+            set
+            {
+                if (_caretWidth == value) return;
+
+                _caretWidth = value;
+
+                Application.Current.DoEvents();
+
+                OnPropertyChanged(nameof(CaretWidth));
             }
         }
 
@@ -88,12 +133,14 @@ namespace WpfCaret
         public double Left
         {
             get => _position.X;
-            set
+            private set
             {
                 if (_position.X == value) return;
 
                 _position.X = Math.Floor(value);
                 if (Visible) Visible = false;
+
+                Application.Current.DoEvents();
 
                 OnPropertyChanged(nameof(Position));
                 OnPropertyChanged(nameof(Left));
@@ -106,7 +153,7 @@ namespace WpfCaret
         public double Top
         {
             get => _position.Y;
-            set
+            private set
             {
                 if (_position.Y == value) return;
 
@@ -117,11 +164,11 @@ namespace WpfCaret
                 OnPropertyChanged(nameof(Top));
             }
         }
-        
+
         /// <summary>
         /// Properties return true if caret is visible
         /// </summary>
-        public bool IsVisibleCaret => Left >= 0 && Top > 0;
+        public bool IsVisibleCaret => Left >= 0 && Top > 0 && _hide == false;
 
         /// <summary>
         /// Blick period in millisecond
@@ -138,6 +185,24 @@ namespace WpfCaret
             }
         }
 
+        /// <summary>
+        /// Caret display mode. Line for Insert, Block for Overwrite
+        /// </summary>
+        public CaretMode CaretMode
+        {
+            get => _caretMode;
+            set
+            {
+                if (_caretMode == value) return;
+
+                _caretMode = value;
+
+                Application.Current.DoEvents();
+
+                OnPropertyChanged(nameof(CaretMode));
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -145,14 +210,14 @@ namespace WpfCaret
         /// <summary>
         /// Hide the caret
         /// </summary>
-        public void Hide() => MoveCaret(new Point(-1, -1));
+        public void Hide() => _hide = true;
 
         /// <summary>
         /// Method delegate for blink the caret
         /// </summary>
         private void BlinkCaret(Object state) => Dispatcher?.Invoke(() =>
         {
-            Visible = !Visible;
+            Visible = !Visible && !_hide;
         });
 
         /// <summary>
@@ -163,17 +228,14 @@ namespace WpfCaret
         /// <summary>
         /// Move the caret over the position defined by point parameter
         /// </summary>
-        public void MoveCaret(Point point)
-        {
-            Left = point.X;
-            Top = point.Y;
-        }
+        public void MoveCaret(Point point) => MoveCaret(point.X, point.Y);
 
         /// <summary>
         /// Move the caret over the position defined by point parameter
         /// </summary>
         public void MoveCaret(double x, double y)
         {
+            _hide = false;
             Left = x;
             Top = y;
         }
@@ -185,6 +247,8 @@ namespace WpfCaret
         public void Start()
         {
             InitializeTimer();
+
+            _hide = false;
 
             OnPropertyChanged(nameof(IsEnable));
         }
@@ -206,16 +270,22 @@ namespace WpfCaret
         protected override void OnRender(DrawingContext dc)
         {
             if (Visible)
-                dc.DrawLine(_pen, _position, new Point(Left, _position.Y + CaretHeight));
+                switch (_caretMode)
+                {
+                    case CaretMode.Insert:
+                        dc.DrawLine(_pen, _position, new Point(Left, _position.Y + CaretHeight));
+                        break;
+                    case CaretMode.Overwrite:
+                        dc.DrawRectangle(_brush, _pen, new Rect(Left, _position.Y, _caretWidth, CaretHeight));
+                        break;
+                }
         }
         #endregion
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
+        //[NotifyPropertyChangedInvocator]
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
     }
 }
