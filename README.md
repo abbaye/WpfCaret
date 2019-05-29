@@ -4,7 +4,7 @@ Wpf Caret is a customisable framework element can be used to implement caret in 
 
 ## Sample picture
 
-![example](wpfCaret.png?raw=true)
+![example](wpfCaret2019.png?raw=true)
 
 ## Implementation
 
